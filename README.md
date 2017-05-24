@@ -13,6 +13,12 @@ $ gem install colorize
 
 # Usage
 
+For converting single file:
 ```
-$ pdfuck [file/directory path]
+$ pdfuck [file.pdf]
+```
+
+If you want to convert pdf files recursively:
+```
+$ pdfuck -r [directory]
 ```
