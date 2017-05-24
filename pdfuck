@@ -1,0 +1,71 @@
+#!/usr/bin/env ruby
+
+#
+# brew install ghostscript
+#
+
+require 'RMagick'
+require 'colorize'
+
+def fit(file)
+  file
+    .gsub("(", "_")
+    .gsub(")", "_")
+    .gsub("（", "_")
+    .gsub("）", "_")
+    .gsub(" ", "")
+end
+
+def make_file(file_name)
+  return "file doesn't exist : #{file_name}\n" unless File.exist?(file_name)
+  return "" unless file_name.end_with?(".pdf")
+
+  package = fit(File.basename(file_name).split(".")[0]) + "_jp"
+  system "mkdir -p #{package}"
+
+  image = Magick::Image.read(file_name){
+    self.size = "200x"
+    self.quality = 100
+    self.density = 200
+  }
+
+  if image.size > 0
+    image.each_with_index do |page, p|
+      page = page.opaque('#CCCCCC00', "#CCCCCC00")
+      page.write(package + "/#{p}.jpg")
+      print "in progress: [#{p+1}/#{image.size}]         \r"
+    end  
+    #system "open #{package}"
+  else
+     return "image reading failure with #{file_name}\n"
+  end
+  puts "SUCCESS #{file_name}".green
+  return ""
+rescue
+  return "ERROR #{file_name}\n"
+end  
+
+args = ARGV
+
+if ARGV.size == 0
+  abort "\nyou need file/dir name as argument\n\n"
+end
+
+asterisk = "*"
+
+if ARGV.include?("-r")
+  asterisk = "**/*"
+  ARGV.delete("-r")
+end
+
+args.each do |file_name|
+  if File.directory?(file_name)
+    Dir["#{file_name}/#{asterisk}"].each do |file|
+      print make_file(file).red
+    end
+  else
+    print make_file(file_name).red
+  end
+end  
+
+

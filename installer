@@ -1,0 +1,2 @@
+cp pdfuck /usr/local/bin/pdfuck
+brew install ghostscript
