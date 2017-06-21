@@ -22,3 +22,8 @@ If you want to convert pdf files recursively:
 ```
 $ pdfuck -r [directory]
 ```
+
+To combine images into one, (veritcally)
+```
+$ pdfuck -c [directory]
+```
