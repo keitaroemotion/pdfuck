@@ -45,7 +45,13 @@ rescue
   return "ERROR #{file_name}\n"
 end  
 
-args = ARGV
+def options
+  ARGV.select{|arg| arg.start_with?("-") }
+end
+
+def args
+  ARGV.select{|arg| !arg.start_with?("-") }
+end
 
 if ARGV.size == 0
   abort "\nyou need file/dir name as argument\n\n"
@@ -53,19 +59,43 @@ end
 
 asterisk = "*"
 
-if ARGV.include?("-r")
-  asterisk = "**/*"
-  ARGV.delete("-r")
-end
 
-args.each do |file_name|
-  if File.directory?(file_name)
-    Dir["#{file_name}/#{asterisk}"].each do |file|
-      print make_file(file).red
-    end
-  else
-    print make_file(file_name).red
+case options.first
+when "-h", "--help"
+  puts 
+  puts "pdfuck -h             ... help menu"
+  puts "pdfuck -r [directory] ... recursively convert pdf to jpegs"
+  puts "pdfuck [file]         ... convert pdf to jpegs"
+  puts "pdfuck -c [dir]       ... combine jpegs into one"
+  puts 
+when "-c"
+  files = Dir["#{args.first}/*"].map do |file|
+    new_path = File.join(File.dirname(file), File.basename(file).rjust(14, "0"))
+    system "mv #{file} #{new_path}"
+    new_path
   end
-end  
+ 
+  files = files.sort
+
+  puts "=================".cyan
+  puts files
+  puts "=================".cyan
+  system "convert -append " + files.join(" ") +  " aaa.jpg"
+  puts "done!"
+else 
+  if ARGV.include?("-r")
+    asterisk = "**/*"
+  end
+
+  args.each do |file_name|
+    if File.directory?(file_name)
+      Dir["#{file_name}/#{asterisk}"].each do |file|
+        print make_file(file).red
+      end
+    else
+      print make_file(file_name).red
+    end
+  end  
+end
 
 
